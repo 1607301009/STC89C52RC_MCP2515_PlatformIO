@@ -6,6 +6,7 @@
 
 #include "STC89xx.h"
 #include "type.h"
+#include "I2C_ROM.h"
 
 //MCP2515引脚定义
 #define MCP2515_INT   P16 //MCP2515中断引脚		（好像没有用到）
@@ -14,20 +15,6 @@
 #define MCP2515_MOSI  P14 //SPI主机输出从机输入引脚
 #define MCP2515_MISO  P13 //SPI主机输入从机输出引脚
 #define MCP2515_CS    P12 //SPI片选引脚
-
-//uint8 code TXB0_Address[]={TXB0CTRL,TXB0SIDH,TXB0SIDL,TXB0EID8,TXB0EID0,TXB0DLC,TXB0D0,TXB0D1,TXB0D2,TXB0D3,TXB0D4,TXB0D5,TXB0D6,TXB0D7};
-//uint8 code TXB1_Address[]={TXB1CTRL,TXB1SIDH,TXB1SIDL,TXB1EID8,TXB1EID0,TXB1DLC,TXB1D0,TXB1D1,TXB1D2,TXB1D3,TXB1D4,TXB1D5,TXB1D6,TXB1D7};
-//uint8 code TXB2_Address[]={TXB2CTRL,TXB2SIDH,TXB2SIDL,TXB2EID8,TXB2EID0,TXB2DLC,TXB2D0,TXB2D1,TXB2D2,TXB2D3,TXB2D4,TXB2D5,TXB2D6,TXB2D7};
-//
-//uint8 code RXF0_Address[]={RXF0SIDH,RXF0SIDL,RXF0EID8,RXF0EID0};
-//uint8 code RXF1_Address[]={RXF1SIDH,RXF1SIDL,RXF1EID8,RXF1EID0};
-//uint8 code RXF2_Address[]={RXF2SIDH,RXF2SIDL,RXF2EID8,RXF2EID0};
-//uint8 code RXF3_Address[]={RXF3SIDH,RXF3SIDL,RXF3EID8,RXF3EID0};
-//uint8 code RXF4_Address[]={RXF4SIDH,RXF4SIDL,RXF4EID8,RXF4EID0};
-//uint8 code RXF5_Address[]={RXF5SIDH,RXF5SIDL,RXF5EID8,RXF5EID0};
-//
-//uint8 code RXM0_Address[]={RXM0SIDH,RXM0SIDL,RXM0EID8,RXM0EID0};
-//uint8 code RXM1_Address[]={RXM1SIDH,RXM1SIDL,RXM1EID8,RXM1EID0};
 
 /*******************************************************************************
 * 函数名  : Delay_Nms
@@ -44,6 +31,17 @@ void Delay_Nms(uint16 x)
 }
 
 /*******************************************************************************
+* 函数名  : Exint_Init
+* 描述    : 外部中断1初始化函数
+*******************************************************************************/
+void Exint_Init(void) {
+    PX1 = 1;    //设置外部中断1的中断优先级为高优先级
+    IT1 = 1;    //设置INT1的中断类型 (1:仅下降沿 0:上升沿和下降沿)
+    EX1 = 1;    //使能INT1中断
+    EA = 1;     //使能总中断
+}
+
+/*******************************************************************************
 * 函数名  : SPI_ReadByte
 * 描述    : 通过SPI读取一个字节数据
 * 输入    : 无
@@ -51,19 +49,17 @@ void Delay_Nms(uint16 x)
 * 返回值  : rByte(读取到的一个字节数据)
 * 说明    : 无
 *******************************************************************************/
-uint8 SPI_ReadByte(void)
-{
-	uint8 i,rByte=0;
-	
-	MCP2515_SCK=0;
-	for(i=0;i<8;i++)
-	{
-		MCP2515_SCK=1;
-		rByte<<=1;
-		rByte|=MCP2515_MISO;
-		MCP2515_SCK=0;	
-	}
-	return rByte;
+uint8 SPI_ReadByte(void) {
+    uint8 i, rByte = 0;
+
+    MCP2515_SCK = 0;
+    for (i = 0; i < 8; i++) {
+        MCP2515_SCK = 1;
+        rByte <<= 1;
+        rByte |= MCP2515_MISO;
+        MCP2515_SCK = 0;
+    }
+    return rByte;
 }
 
 /*******************************************************************************
@@ -74,20 +70,17 @@ uint8 SPI_ReadByte(void)
 * 返回值  : 无
 * 说明    : 无
 *******************************************************************************/
-void SPI_SendByte(uint8 dt)
-{
-	uint8 i;
-		
-	for(i=0;i<8;i++)
-	{	
-		MCP2515_SCK=0;
-		if((dt<<i)&0x80)
-			MCP2515_MOSI=1;
-		else
-			MCP2515_MOSI=0;					
-		MCP2515_SCK=1;
-	}
-	MCP2515_SCK=0;
+void SPI_SendByte(uint8 dt) {
+    uint8 i;
+    for (i = 0; i < 8; i++) {
+        MCP2515_SCK = 0;
+        if ((dt << i) & 0x80)
+            MCP2515_MOSI = 1;
+        else
+            MCP2515_MOSI = 0;
+        MCP2515_SCK = 1;
+    }
+    MCP2515_SCK = 0;
 }
 
 /*******************************************************************************
@@ -98,13 +91,12 @@ void SPI_SendByte(uint8 dt)
 * 返回值  : 无
 * 说明    : 无
 *******************************************************************************/
-void MCP2515_WriteByte(uint8 addr,uint8 dat)
-{
-	MCP2515_CS=0;				//置MCP2515的CS为低电平
-	SPI_SendByte(CAN_WRITE);	//发送写命令
-	SPI_SendByte(addr);			//发送地址
-	SPI_SendByte(dat);			//写入数据
-	MCP2515_CS=1;				//置MCP2515的CS为高电平 
+void MCP2515_WriteByte(uint8 addr, uint8 dat) {
+    MCP2515_CS = 0;                //置MCP2515的CS为低电平
+    SPI_SendByte(CAN_WRITE);    //发送写命令
+    SPI_SendByte(addr);            //发送地址
+    SPI_SendByte(dat);            //写入数据
+    MCP2515_CS = 1;                //置MCP2515的CS为高电平
 }
 
 /*******************************************************************************
@@ -115,16 +107,15 @@ void MCP2515_WriteByte(uint8 addr,uint8 dat)
 * 返回值  : rByte:读取到寄存器的1个字节数据
 * 说明    : 无
 *******************************************************************************/
-uint8 MCP2515_ReadByte(uint8 addr)
-{
-	uint8 rByte;
-	
-	MCP2515_CS=0;				//置MCP2515的CS为低电平
-	SPI_SendByte(CAN_READ);		//发送读命令
-	SPI_SendByte(addr);			//发送地址
-	rByte=SPI_ReadByte();		//读取数据
-	MCP2515_CS=1;				//置MCP2515的CS为高电平
-	return rByte;				//返回读到的一个字节数据
+uint8 MCP2515_ReadByte(uint8 addr) {
+    uint8 rByte;
+
+    MCP2515_CS = 0;                //置MCP2515的CS为低电平
+    SPI_SendByte(CAN_READ);        //发送读命令
+    SPI_SendByte(addr);            //发送地址
+    rByte = SPI_ReadByte();        //读取数据
+    MCP2515_CS = 1;                //置MCP2515的CS为高电平
+    return rByte;                //返回读到的一个字节数据
 }
 
 /*******************************************************************************
@@ -135,11 +126,10 @@ uint8 MCP2515_ReadByte(uint8 addr)
 * 返回值  : 无
 * 说明    : 将内部寄存器复位为缺省状态,并将器件设定为配置模式
 *******************************************************************************/
-void MCP2515_Reset(void)
-{
-	MCP2515_CS=0;				//置MCP2515的CS为低电平
-	SPI_SendByte(CAN_RESET);	//发送寄存器复位命令
-	MCP2515_CS=1;				//置MCP2515的CS为高电平
+void MCP2515_Reset(void) {
+    MCP2515_CS = 0;                //置MCP2515的CS为低电平
+    SPI_SendByte(CAN_RESET);    //发送寄存器复位命令
+    MCP2515_CS = 1;                //置MCP2515的CS为高电平
 }
 
 /*******************************************************************************
@@ -147,18 +137,20 @@ void MCP2515_Reset(void)
 * 输入    : array：数组， offset：ID在数组的位置
 *******************************************************************************/
 uint32 Get_ID_For_Array(uint8 *array, uint8 offset) {
-    return ((uint32) array[0 + offset] & 0x7F << 24)
-    | (uint32) (array[1 + offset] << 24)
-    | (uint32) (array[2 + offset] << 16)
-    | array[3 + offset];
+    // 0bit RTRglag  1bit ERRORflag  2bit IDEflag
+    return (((uint32) array[0 + offset] & 0x1F) << 24) |
+           ((uint32) array[1 + offset] << 16) |
+           ((uint32) array[2 + offset] << 8) |
+           array[3 + offset];
 }
 
 /*******************************************************************************
 * 描述    : 将ID拆分，写入数组中，默认数组高位的第一位为扩展标志位。
 * 输入    : array：数组， offset：ID高位写入数组的位置，
 *******************************************************************************/
-void Set_Array_For_ID(uint8 *array, uint8 offset, uint32 ID, uint8 EXIDE) {
-    array[0 + offset] = (ID >> 24) | (EXIDE << 7);
+void Set_Array_For_ID(uint8 *array, uint8 offset, uint32 ID, uint8 flag) {
+    // 0bit RTRglag  1bit ERRORflag  2bit IDEflag
+    array[0 + offset] = (ID >> 24) & 0x1F| (flag << 5);
     array[1 + offset] = (ID >> 16) & 0xFF;
     array[2 + offset] = (ID >> 8) & 0xFF;
     array[3 + offset] = ID & 0xFF;
@@ -172,9 +164,9 @@ uint32 Get_ID_For_Buf(uint8 buf_addr) {
     uint8 SIDL = MCP2515_ReadByte(buf_addr + 1);
 
     uint32 SID = ((uint32) MCP2515_ReadByte(buf_addr) << 3) | (SIDL >> 5);
-    uint32 EID = (uint32) (SIDL & 3) << 16
-            | ((uint32) MCP2515_ReadByte(buf_addr + 2) << 8)
-            | MCP2515_ReadByte(buf_addr + 3);
+    uint32 EID = (uint32) (SIDL & 3) << 16 |
+                 ((uint32) MCP2515_ReadByte(buf_addr + 2) << 8) |
+                 MCP2515_ReadByte(buf_addr + 3);
     // EID有数值或是扩展帧
     if (EID || (SIDL & 0x8)) {
         return SID << 18 | EID;
@@ -235,30 +227,6 @@ void Set_Bitrate_Array(uint8 _5Kbps, uint8 *bitrate) {
     bitrate[0] = kbps, bitrate[1] = prseg, bitrate[2] = phseg1, bitrate[3] = phseg2, bitrate[4] = sjw;
 }
 
-
-
-/*******************************************************************************
-* 描述    : 设置报文接收屏蔽器RXM和过滤器RXF、发送缓冲器TXB ID
-* 输入    : 屏蔽器、过滤器、缓冲器 SIDH首地址； ID， 扩展标志位
-* 返回值  : 无
-* 说明    : 当ID>0x7FF设置设置为拓展帧
-*******************************************************************************/
-//void CanSetID(uint8 Address, uint32 ID, bool EXIDE)
-//{
-//    // EXIDE=1、ID>0x7FF设置位拓展帧
-//    if ((ID > 0x7FF) || EXIDE) {
-//        MCP2515_WriteByte(Address, ID >> 21);                      //SIDH
-//        MCP2515_WriteByte(Address + 1, (ID >> 18 & 0x07) << 5 | (ID >> 16 & 0x03) | 0x08);      //SIDL
-//        MCP2515_WriteByte(Address + 2, ID >> 8 & 0xFF);      //EID8
-//        MCP2515_WriteByte(Address + 3, ID & 0xFF);           //EID0
-//    } else {
-//        MCP2515_WriteByte(Address, ID >> 3);                      //SIDH
-//        MCP2515_WriteByte(Address + 1, (ID & 0x07) << 5);   //SIDL
-//        MCP2515_WriteByte(Address + 2, 0);                  //EID8
-//        MCP2515_WriteByte(Address + 3, 0);                  //EID0
-//    }
-//}
-
 void Can_Init(CanCfgStruct *CanCfg)
 {
     MCP2515_Reset();    //发送复位指令软件复位MCP2515
@@ -296,84 +264,6 @@ void Can_Init(CanCfgStruct *CanCfg)
         MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
     }
 }
-
-/*******************************************************************************
-* 函数名  : MCP2515_Init
-* 描述    : MCP2515初始化配置
-* 输入    : 无
-* 输出    : 无
-* 返回值  : 无
-* 说明    : 初始化包括：软件复位、工作波特率设置、标识符相关配置等。
-*******************************************************************************/
-//void MCP2515_Init(uint8 *CAN_Bitrate)
-//{
-//	uint8 temp=0;
-//
-//	MCP2515_Reset();	//发送复位指令软件复位MCP2515
-//	Delay_Nms(1);		//通过软件延时约nms(不准确)
-//
-//	//设置波特率
-//	//set CNF1,SJW=00,长度为1TQ,BRP=49,TQ=[2*(BRP+1)]/Fsoc=2*50/8M=12.5us
-//	MCP2515_WriteByte(CNF1,CAN_Bitrate[4]|CAN_Bitrate[0]);
-//	//set CNF2,SAM=0,在采样点对总线进行一次采样，PHSEG1=(2+1)TQ=3TQ,PRSEG=(0+1)TQ=1TQ
-//	MCP2515_WriteByte(CNF2,BTLMODE_CNF3|CAN_Bitrate[2]|CAN_Bitrate[1]);
-//	//set CNF3,PHSEG2=(2+1)TQ=3TQ,同时当CANCTRL.CLKEN=1时设定CLKOUT引脚为时间输出使能位
-//	MCP2515_WriteByte(CNF3,SOF_ENABLED|CAN_Bitrate[3]);
-//
-//	MCP2515_WriteByte(RXB0CTRL,0x06);//如果RXB0满,RXB0 接收到的报文将被滚存至RXB1
-//
-//	//uint8 RXF_Address,uint32 ID,uint8 EXIDE)
-//	//RXB0 接收缓冲器配备有验收滤波寄存器RXF0 和RXF1（以及过滤屏蔽寄存器RXM0）
-//	Set_Buf_For_ID(RXF0SIDH,0x100,1);
-//	Set_Buf_For_ID(RXF1SIDH,0x7FE,0);
-//
-//	Set_Buf_For_ID(RXM0SIDH,0x7FF,0);
-//
-//	//RXB1 配备有验收滤波寄存器RXF2、RXF3、RXF4、RXF5和滤波屏蔽寄存器RXM1。
-//	Set_Buf_For_ID(RXF2SIDH,0x800,1);
-//	Set_Buf_For_ID(RXF3SIDH,0x1FFFFFFF,1);
-//	Set_Buf_For_ID(RXF4SIDH,0x7FF,0);
-//	Set_Buf_For_ID(RXF5SIDH,0x0,0);
-//
-//	Set_Buf_For_ID(RXM1SIDH,0x1FFFFFFE,0);
-//
-////	MCP2515_WriteByte(TXB0SIDH,0xAB);//发送缓冲器0标准标识符高位
-////	MCP2515_WriteByte(TXB0SIDL,0xE0);//|0x08|0x2);//发送缓冲器0标准标识符低位
-////	MCP2515_WriteByte(TXB0EID8,0x00);//发送缓冲器0标准标识符高位
-////	MCP2515_WriteByte(TXB0EID0,0x00);//发送缓冲器0标准标识符低位
-////
-////
-////	MCP2515_WriteByte(RXB0SIDH,0x00);//清空接收缓冲器0的标准标识符高位
-////	MCP2515_WriteByte(RXB0SIDL,0x00);//清空接收缓冲器0的标准标识符低位
-////
-////	MCP2515_WriteByte(RXB0CTRL,0x62);//仅仅接收标准标识符的有效信息
-////	MCP2515_WriteByte(RXB0DLC,DLC_8);//设置接收数据的长度为8个字节
-////
-////	MCP2515_WriteByte(RXF0SIDH,0xFF);       //配置验收滤波寄存器n标准标识符高位
-////
-////	MCP2515_WriteByte(RXM0SIDH,0xFF);       //配置验收屏蔽寄存器n标准标识符高位
-////	MCP2515_WriteByte(RXM1EID0,0xE0);       //配置验收屏蔽寄存器n标准标识符低位
-////
-//	MCP2515_WriteByte(CANINTF,0x00);    //清空CAN中断标志寄存器的所有位(必须由MCU清空)
-//	MCP2515_WriteByte(CANINTE,0x03);    //配置CAN中断使能寄存器的接收缓冲器满中断使能,其它位禁止中断
-//
-////	MCP2515_WriteByte(CANCTRL,REQOP_LOOPBACK|CLKOUT_ENABLED);//|OSM_ENABLED将MCP2515设置为正常模式,退出配置模式
-////
-////	temp=MCP2515_ReadByte(CANSTAT);//读取CAN状态寄存器的值
-////	if(OPMODE_LOOPBACK!=(temp&&0xE0))//判断MCP2515是否已经进入正常模式
-////	{
-////	    MCP2515_WriteByte(CANCTRL,REQOP_LOOPBACK|CLKOUT_ENABLED);//|OSM_ENABLED再次将MCP2515设置为正常模式,退出配置模式
-////	}
-//
-//    MCP2515_WriteByte(CANCTRL,REQOP_LOOPBACK|CLKOUT_ENABLED);//将MCP2515设置为环回模式,退出配置模式
-//
-//    temp=MCP2515_ReadByte(CANSTAT);//读取CAN状态寄存器的值
-//    if(OPMODE_NORMAL!=(temp&&0xE0))//判断MCP2515是否已经进入环回模式
-//    {
-//    MCP2515_WriteByte(CANCTRL,REQOP_LOOPBACK|CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
-//    }
-//
-//}
 
 /*******************************************************************************
 * 函数名  : CAN_Send_Buffer
@@ -423,114 +313,49 @@ void CAN_Send_Msg(MsgStruct *SendMsg) {
 //    }
 }
 
-//
-//void CAN_Send_buffer(uint32 ID,uint8 EXIDE,uint8 DLC,uint8 *Send_data)
-//{
-//	uint8 TXBnCTRL;         // 选择发送缓冲器
-//
-//   	uint8 i;
-//   	//寄存器状态获取TXB0-2是否忙碌，1为忙碌，0为空闲， 如果前面两个寄存器全部忙碌， 默认使用第3个
-//	for (i = 0; i < 3; i++) //发送字符串，直到遇到0才结束
-//    {
-//	    TXBnCTRL = TXB0CTRL + 0xF * i;
-//	    if ((MCP2515_ReadByte(TXBnCTRL) & TXREQ) == 0)
-//	    {
-//            break;
-//	    }
-//    }
-////	uint8 Read_TXBnCTRL = MCP2515_ReadByte(TXB0CTRL);
-////	if ((Read_TXBnCTRL & TXREQ) == 0)
-////	{
-////	    TXBnCTRL = TXB0CTRL;
-////	}
-////	else
-////	{
-////	    Read_TXBnCTRL = MCP2515_ReadByte(TXB1CTRL);
-////	    if ((Read_TXBnCTRL & TXREQ) == 0)
-////	    {
-////	        TXBnCTRL = TXB1CTRL;
-////	    }
-////	    else
-////	    {
-////	        Read_TXBnCTRL = MCP2515_ReadByte(TXB2CTRL);  // 如果前面两个寄存器全部忙碌， 默认使用第3个
-////	        TXBnCTRL = TXB2CTRL;
-////	    }
-////	}
-//
-//	// 设置DLC， 默认为数据帧 RTR=0   后期开发远程帧
-//	MCP2515_WriteByte(TXBnCTRL + 5, DLC);
-//    Set_Buf_For_ID(TXBnCTRL + 1, ID, EXIDE);
-//	// EXIDE=1、ID>0x7FF发送拓展帧
-////	if (ID<=0x7FF)
-////	{
-////		if (EXIDE)
-////		{
-////		    MCP2515_WriteByte(TXBnCTRL + 1, 0x0);			//SIDH
-////		    MCP2515_WriteByte(TXBnCTRL + 2, 0x8);			//SIDL
-////		    MCP2515_WriteByte(TXBnCTRL + 3, ID>>8&0xFF);	//EID8
-////            MCP2515_WriteByte(TXBnCTRL + 4, ID&0xFF);		//EID0
-////		}
-////		else
-////		{
-////		    MCP2515_WriteByte(TXBnCTRL + 1, ID>>3);		  //SIDH
-////		    MCP2515_WriteByte(TXBnCTRL + 2, (ID&0x07)<<5);  //SIDL
-////		    MCP2515_WriteByte(TXBnCTRL + 3, 0);			  //EID8
-////		    MCP2515_WriteByte(TXBnCTRL + 4, 0);			  //EID0
-////		}
-////	}
-////	else
-////	{
-////	    MCP2515_WriteByte(TXBnCTRL + 1, ID>>21);								  //SIDH
-////	    MCP2515_WriteByte(TXBnCTRL + 2, (ID>>18&0x07)<<5|(ID>>16&0x03)|0x08);	  //SIDL
-////	    MCP2515_WriteByte(TXBnCTRL + 3, ID>>8&0xFF);							  //EID8
-////	    MCP2515_WriteByte(TXBnCTRL + 4, ID&0xFF);								  //EID0
-////	}
-//
-//	for(i = 0;(i <= DLC && i <= 8); i++)
-//	{
-//	    MCP2515_WriteByte(TXBnCTRL + 6 + i, Send_data[i]);						  //D0_8将待发送的数据写入发送缓冲寄存器
-//	}
-//
-//	MCP2515_CS=0;
-//	MCP2515_WriteByte(TXBnCTRL, Read_TXBnCTRL | TXREQ);	//CTRL 开始发送
-//	MCP2515_CS=1;
-//	//发送形式设置：单次发送，远程帧，拓展帧，调试状态，回应。
-//
-//    // 等待报文发送成功
-//    for(i = 0; i < 14; i++)
-//    {
-//        if ((MCP2515_ReadByte(TXBnCTRL) & TXREQ) == 0)
-//        {
-//            return;
-//        }
-//        Delay_Nms(100);
-//    }
-//}
 
 /*******************************************************************************
-* 函数名  : CAN_Receive_Buffer
-* 描述    : CAN接收一帧数据
-* 输入    : RX_Address(需要读取的RXB0CTRL、RXB1CTRL地址),*CAN_TX_Buf(待接收数据缓冲区指针)
-* 输出    : 无
-* 返回值  : len(接收到数据的长度,0~8字节)
-* 说明    : 无
+* 描述    : 通过读取存储数据，设置Can配置
+* 输入    : Can配置结构体
+* 说明    : 依赖GetInt32FormE2拼接出完整ID， 首位做扩展标志位
 *******************************************************************************/
-//void CAN_Receive_Buffer(uint8 RXB_CTRL_Address,uint8 *CAN_RX_Buf)
-//{
-//	uint8 j;
-//	for(j=0;j<14;j++)
-//	{
-//		CAN_RX_Buf[j]=MCP2515_ReadByte(RXB_CTRL_Address+j);//把CAN接收到的数据放入指定缓冲区
-//		//CAN_RX_Buf[j]=RXB_CTRL_Address+j;
-//	}
-//	if (RXB_CTRL_Address==RXB0CTRL)
-//		{
-//		MCP2515_WriteByte(CANINTF,0);//清除中断标志位(中断标志寄存器必须由MCU清零)
-//		}
-//	else if (RXB_CTRL_Address==RXB1CTRL)
-//		{
-//		MCP2515_WriteByte(CANINTF,0);//清除中断标志位(中断标志寄存器必须由MCU清零)
-//		}
-//}
+void Set_Cfg_From_E2(CanCfgStruct *CanCfg) {
+    uint8 E2_read_data[8];
 
+    // page 0: Kbps, CAN_MODE, CANINTE, CANINTF, BUKT, RXB0RXM, RXB1RXM
+    //  设置波特率
+    E2Read(E2_read_data, E2_CanCifg, 8);  // 从 EEPROM 读取一段数据
+    CanCfg->_5Kbps = E2_read_data[E2_5Kbps];
+    Set_Bitrate_Array(CanCfg->_5Kbps, CanCfg->bitrate);
+    CanCfg->CAN_MODE = E2_read_data[E2_CAN_MODE];      // 0:正常 1:休眠 2:环回 3:监听 4:配置
+    CanCfg->CANINTE_enable = E2_read_data[E2_CANINTE_enable];
+    CanCfg->CANINTF_enable = E2_read_data[E2_CANINTF_enable];
+    //  设置滚存使能位、工作模式、中断使能位、中断标志位
+    CanCfg->BUKT_enable = E2_read_data[E2_BUKT_enable];
+    CanCfg->RXB0RXM = E2_read_data[E2_RXB0RXM];
+    CanCfg->RXB1RXM = E2_read_data[E2_RXB1RXM];
 
+//    //  设置屏蔽器0 1
+//    E2Read(E2_read_data, E2_RXM01ID, 8);  // 从 EEPROM 读取一段数据
+//    CanCfg->RXM0ID = Get_ID_For_Array(E2_read_data, 0);
+//    CanCfg->RXM1ID = Get_ID_For_Array(E2_read_data, 4);
+//
+//    //  滤波器0、1
+//    E2Read(E2_read_data, E2_RXF01, 8);  // 从 EEPROM 读取一段数据
+//    CanCfg->RXF0IDE = E2_read_data[1] & 0x8 >> 3;
+//    CanCfg->RXF0ID = Get_ID_For_Array(E2_read_data, 0);
+//    CanCfg->RXF1IDE = E2_read_data[4] & 0x8 >> 3;
+//    CanCfg->RXF1ID = Get_ID_For_Array(E2_read_data, 4);
+//    //  滤波器2、3
+//    E2Read(E2_read_data, E2_RXF23, 8);  // 从 EEPROM 读取一段数据
+//    CanCfg->RXF2IDE = E2_read_data[0] & 0x8 >> 3;
+//    CanCfg->RXF2ID = Get_ID_For_Array(E2_read_data, 0);
+//    CanCfg->RXF3IDE = E2_read_data[4] & 0x8 >> 3;
+//    CanCfg->RXF3ID = Get_ID_For_Array(E2_read_data, 4);
+//    //  滤波器4、5
+//    E2Read(E2_read_data, E2_RXF45, 8);  // 从 EEPROM 读取一段数据
+//    CanCfg->RXF4IDE = E2_read_data[0] & 0x8 >> 3;
+//    CanCfg->RXF4ID = Get_ID_For_Array(E2_read_data, 0);
+//    CanCfg->RXF5IDE = E2_read_data[4] & 0x8 >> 3;
+//    CanCfg->RXF5ID = Get_ID_For_Array(E2_read_data, 4);
+}

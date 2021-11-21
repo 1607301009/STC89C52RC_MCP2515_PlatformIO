@@ -481,9 +481,9 @@
 #define RXF0_set_config      0x0 // 配置功能位
 
 typedef __bit bool;             // 位变量
-typedef unsigned char uint8;    // 无符号8位整型变量
-typedef unsigned int uint16;    // 无符号16位整型变量
-typedef unsigned long uint32;   // 无符号32位整型变量
+typedef unsigned char  uint8;    // 无符号8位整型变量
+typedef unsigned int  uint16;    // 无符号16位整型变量
+typedef unsigned long  uint32;   // 无符号32位整型变量
 
 
 // p21 RTR 远程发送标志位
@@ -542,7 +542,7 @@ typedef struct        // reveive 结构体
     uint8 RXF3IDE:1;     // 滤波器RXF3扩展帧标志位
     uint8 RXF4IDE:1;     // 滤波器RXF4扩展帧标志位
     uint8 RXF5IDE:1;     // 滤波器RXF5扩展帧标志位
-} CanCfgStruct;
+}__xdata CanCfgStruct;
 
 
 #endif
