@@ -2,6 +2,7 @@
 #define STC89xx_H
 
 #include <compiler.h>
+#include "type.h"
 
 // 适用于 STC89xx / STC90xx 系列的芯片
 // Modified based on STC-ISP version by: ZnHoCn
