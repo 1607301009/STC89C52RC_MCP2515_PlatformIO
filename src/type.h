@@ -433,6 +433,17 @@
 
 
 /* Config address 配置信息 */
+// page 0: Kbps, CAN_MODE, CANINTE, CANINTF, BUKT, RXB0RXM, RXB1RXM
+//E2Read(E2_read_data, E2_CanCifg, 8);  // 从 EEPROM 读取一段数据
+//CanCfg->_5Kbps = E2_read_data[E2_5Kbps];
+//Set_Bitrate_Array(CanCfg->_5Kbps, CanCfg->bitrate);
+//CanCfg->CAN_MODE = E2_read_data[E2_CAN_MODE];      // 0:正常 1:休眠 2:环回 3:监听 4:配置
+//CanCfg->CANINTE_enable = E2_read_data[E2_CANINTE_enable];
+//CanCfg->CANINTF_enable = E2_read_data[E2_CANINTF_enable];
+////  设置滚存使能位、工作模式、中断使能位、中断标志位
+//CanCfg->BUKT_enable = E2_read_data[E2_BUKT_enable];
+//CanCfg->RXB0RXM = E2_read_data[E2_RXB0RXM];
+//CanCfg->RXB1RXM = E2_read_data[E2_RXB1RXM];
 #define E2_5Kbps            0x0 // 波特率标志位
 #define E2_CAN_MODE         0x1 // 工作模式： 1. 配置模式。
 //          2. 正常模式。
@@ -481,7 +492,7 @@
 #define RXF0_set_config      0x0 // 配置功能位
 
 typedef __bit bool;             // 位变量
-typedef unsigned char  uint8;    // 无符号8位整型变量
+typedef unsigned char uint8;    // 无符号8位整型变量
 typedef unsigned int  uint16;    // 无符号16位整型变量
 typedef unsigned long  uint32;   // 无符号32位整型变量
 

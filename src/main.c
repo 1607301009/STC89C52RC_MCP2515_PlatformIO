@@ -68,15 +68,14 @@ void Printf_Cfg(CanCfgStruct *CanCfg) {
 //    printf(" %02X ", Send_data[isRead]);
 //}
 
-    printf("_5Kbps: %02d \r\n", CanCfg->_5Kbps);
+    printf("Kbps: %02d \r\n", CanCfg->_5Kbps * 5);
     printf("bitrate: %02d %02X %02X %02X %02X\r\n", CanCfg->bitrate[0],
            CanCfg->bitrate[1], CanCfg->bitrate[2], CanCfg->bitrate[3], CanCfg->bitrate[4]);
-
-    printf("BUKT_enable: %02X \r\n", CanCfg->BUKT_enable);
     printf("CAN_MODE: %02X \r\n", CanCfg->CAN_MODE);
 
     printf("CANINTE: %02X \r\n", CanCfg->CANINTE_enable);
     printf("CANINTF: %02X \r\n", CanCfg->CANINTF_enable);
+    printf("BUKT_enable: %02X \r\n", CanCfg->BUKT_enable);
 //
     printf("RXBnRXM0-1: %02X %02X\r\n", CanCfg->RXB0RXM, CanCfg->RXB1RXM);
 //
@@ -132,19 +131,36 @@ void E2_buf(uint8 isRead)
             0x00, 0x00, 0x07, 0xff, 0x10, 0x00, 0x17, 0xFF,
             // RXM0ID 0 1
             0x9F, 0xFF, 0xFF, 0xFF, 0x9F, 0xFF, 0xFF, 0xFE};
+//    uint8 i;
+//__xdata uint8 i;
+//__xdata unsigned char i;
+//__bdata bit k;
+//    k =1;
     printf("E2_buf: %02X ", isRead);
 //    if (isRead == 1) {
         printf("now read:\r\n");
-        E2Read(Send_data, 0, 40);
-        for (isRead = 0; isRead < 40; isRead++) {
-            if (isRead % 8 == 0) {
-                printf("\r\n");
-            }
-            if (isRead % 4 == 0) {
-                printf("  ");
-            }
-            printf(" %02X ", Send_data[isRead]);
-        }
+        E2Read(Send_data, 0, 8);
+        Print_array(Send_data, 8);
+        E2Read(Send_data, 8, 8);
+        Print_array(Send_data, 8);
+        E2Read(Send_data, 16, 8);
+        Print_array(Send_data, 8);
+        E2Read(Send_data, 24, 8);
+        Print_array(Send_data, 8);
+        E2Read(Send_data, 32, 8);
+        Print_array(Send_data, 8);
+//        for (; isRead >= 4; isRead++) {
+////            printf("isRead : %d\r\n", i);
+////            if (i % 8 == 0) {
+////                printf("\r\n");
+////            }
+////            if (i % 4 == 0) {
+////                printf("  ");
+////            }
+//printf(" %02X ", Send_data[isRead]);
+//        }
+
+        
 //    } else {
 //        E2Write(Send_data, 0, 8);
 //    }
