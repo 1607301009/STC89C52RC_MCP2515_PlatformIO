@@ -335,27 +335,27 @@ void Set_Cfg_From_E2(CanCfgStruct *CanCfg) {
     CanCfg->RXB0RXM = E2_read_data[E2_RXB0RXM];
     CanCfg->RXB1RXM = E2_read_data[E2_RXB1RXM];
 
-//    //  设置屏蔽器0 1
+    //  设置屏蔽器0 1
     E2Read(E2_read_data, E2_RXM01ID, 8);  // 从 EEPROM 读取一段数据
     CanCfg->RXM0ID = Get_ID_For_Array(E2_read_data, 0);
     CanCfg->RXM1ID = Get_ID_For_Array(E2_read_data, 4);
-//
-//    //  滤波器0、1
-//    E2Read(E2_read_data, E2_RXF01, 8);  // 从 EEPROM 读取一段数据
-//    CanCfg->RXF0IDE = E2_read_data[1] & 0x8 >> 3;
-//    CanCfg->RXF0ID = Get_ID_For_Array(E2_read_data, 0);
-//    CanCfg->RXF1IDE = E2_read_data[4] & 0x8 >> 3;
-//    CanCfg->RXF1ID = Get_ID_For_Array(E2_read_data, 4);
+
+    //  滤波器0、1
+    E2Read(E2_read_data, E2_RXF01, 8);  // 从 EEPROM 读取一段数据
+    CanCfg->RXF0IDE = E2_read_data[1] & 0x8 >> 3;
+    CanCfg->RXF0ID = Get_ID_For_Array(E2_read_data, 0);
+    CanCfg->RXF1IDE = E2_read_data[4] & 0x8 >> 3;
+    CanCfg->RXF1ID = Get_ID_For_Array(E2_read_data, 4);
     //  滤波器2、3
-//    E2Read(E2_read_data, E2_RXF23, 8);  // 从 EEPROM 读取一段数据
-//    CanCfg->RXF2IDE = E2_read_data[0] & 0x8 >> 3;
-//    CanCfg->RXF2ID = Get_ID_For_Array(E2_read_data, 0);
-//    CanCfg->RXF3IDE = E2_read_data[4] & 0x8 >> 3;
-//    CanCfg->RXF3ID = Get_ID_For_Array(E2_read_data, 4);
+    E2Read(E2_read_data, E2_RXF23, 8);  // 从 EEPROM 读取一段数据
+    CanCfg->RXF2IDE = E2_read_data[0] & 0x8 >> 3;
+    CanCfg->RXF2ID = Get_ID_For_Array(E2_read_data, 0);
+    CanCfg->RXF3IDE = E2_read_data[4] & 0x8 >> 3;
+    CanCfg->RXF3ID = Get_ID_For_Array(E2_read_data, 4);
     //  滤波器4、5
-//    E2Read(E2_read_data, E2_RXF45, 8);  // 从 EEPROM 读取一段数据
-//    CanCfg->RXF4IDE = E2_read_data[0] & 0x8 >> 3;
-//    CanCfg->RXF4ID = Get_ID_For_Array(E2_read_data, 0);
-//    CanCfg->RXF5IDE = E2_read_data[4] & 0x8 >> 3;
-//    CanCfg->RXF5ID = Get_ID_For_Array(E2_read_data, 4);
+    E2Read(E2_read_data, E2_RXF45, 8);  // 从 EEPROM 读取一段数据
+    CanCfg->RXF4IDE = E2_read_data[0] & 0x8 >> 3;
+    CanCfg->RXF4ID = Get_ID_For_Array(E2_read_data, 0);
+    CanCfg->RXF5IDE = E2_read_data[4] & 0x8 >> 3;
+    CanCfg->RXF5ID = Get_ID_For_Array(E2_read_data, 4);
 }

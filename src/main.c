@@ -38,7 +38,7 @@ void Exint_ISR(void) __interrupt 2 __using 1
 
 void Print_array(uint8 *array, uint8 len) {
     uint8 i;
-    printf("Len: %02X  Data:",  len);
+//    printf("Len: %02X  Data:",  len);
     for (i = 0; i < len; i++) {
         printf(" %02X", array[i]);
     }
@@ -47,44 +47,31 @@ void Print_array(uint8 *array, uint8 len) {
 
 
 
-
+/*******************************************************************************
+* 函数名  : 打印can cfg
+*******************************************************************************/
 void Printf_Cfg(CanCfgStruct *CanCfg) {
-//    uint8 __xdata E2_read_data[8];
-//    uint8 isRead;
-//    printf("page: ");
-//    Printf_E2(E2_CanCifg);
-//    Printf_E2(E2_RXF01);
-//    Printf_E2(E2_RXF23);
-//    Printf_E2(E2_RXF45);
-
-//E2Read(E2_read_data, 0, 8);
-//for (isRead = 0; isRead < 8; isRead++) {
-//    if (isRead % 8 == 0) {
-//        printf("\r\n");
-//    }
-//    if (isRead % 4 == 0) {
-//        printf("  ");
-//    }
-//    printf(" %02X ", Send_data[isRead]);
-//}
-
     printf("Kbps: %02d \r\n", CanCfg->_5Kbps * 5);
-    printf("bitrate: %02d %02X %02X %02X %02X\r\n", CanCfg->bitrate[0],
-           CanCfg->bitrate[1], CanCfg->bitrate[2], CanCfg->bitrate[3], CanCfg->bitrate[4]);
+    printf("bitrate: ");
+    Print_array(CanCfg->bitrate, 5);
+
     printf("CAN_MODE: %02X \r\n", CanCfg->CAN_MODE);
 
     printf("CANINTE: %02X \r\n", CanCfg->CANINTE_enable);
     printf("CANINTF: %02X \r\n", CanCfg->CANINTF_enable);
     printf("BUKT_enable: %02X \r\n", CanCfg->BUKT_enable);
-//
+
     printf("RXBnRXM0-1: %02X %02X\r\n", CanCfg->RXB0RXM, CanCfg->RXB1RXM);
-//
+
     printf("RXMnID0-1: %08lX %08lX\r\n", CanCfg->RXM0ID, CanCfg->RXM1ID);
-//    printf("RXFnID0-5: %07lX %07lX %07lX %07lX %07lX\r\n", CanCfg->RXF0ID, CanCfg->RXF1ID, CanCfg->RXF2ID,
-//           CanCfg->RXF3ID, CanCfg->RXF4ID, CanCfg->RXF5ID);
-//
-//    printf("RXFnIDE0-5: %bX %bX %bX %bX %bX\r\n", CanCfg->RXF0IDE, CanCfg->RXF1IDE, CanCfg->RXF2IDE, CanCfg->RXF3IDE,
-//           CanCfg->RXF4IDE, CanCfg->RXF5IDE);
+
+    printf("    No    flag    ID\r\n");
+    printf("RXF %d     %d     %08lX\r\n", 0, CanCfg->RXF0IDE, CanCfg->RXF0ID);
+    printf("RXF %d     %d     %08lX\r\n", 1, CanCfg->RXF1IDE, CanCfg->RXF1ID);
+    printf("RXF %d     %d     %08lX\r\n", 2, CanCfg->RXF2IDE, CanCfg->RXF2ID);
+    printf("RXF %d     %d     %08lX\r\n", 3, CanCfg->RXF3IDE, CanCfg->RXF3ID);
+    printf("RXF %d     %d     %08lX\r\n", 4, CanCfg->RXF4IDE, CanCfg->RXF4ID);
+    printf("RXF %d     %d     %08lX\r\n", 5, CanCfg->RXF5IDE, CanCfg->RXF5ID);
 }
 
 /*******************************************************************************
@@ -131,34 +118,34 @@ void E2_buf(uint8 isRead)
             0x00, 0x00, 0x07, 0xff, 0x10, 0x00, 0x17, 0xFF,
             // RXM0ID 0 1
             0x9F, 0xFF, 0xFF, 0xFF, 0x9F, 0xFF, 0xFF, 0xFE};
-//    uint8 i;
+    uint8 i;
 //__xdata uint8 i;
 //__xdata unsigned char i;
 //__bdata bit k;
 //    k =1;
     printf("E2_buf: %02X ", isRead);
 //    if (isRead == 1) {
-        printf("now read:\r\n");
-        E2Read(Send_data, 0, 8);
-        Print_array(Send_data, 8);
-        E2Read(Send_data, 8, 8);
-        Print_array(Send_data, 8);
-        E2Read(Send_data, 16, 8);
-        Print_array(Send_data, 8);
-        E2Read(Send_data, 24, 8);
-        Print_array(Send_data, 8);
-        E2Read(Send_data, 32, 8);
-        Print_array(Send_data, 8);
-//        for (; isRead >= 4; isRead++) {
-////            printf("isRead : %d\r\n", i);
-////            if (i % 8 == 0) {
-////                printf("\r\n");
-////            }
-////            if (i % 4 == 0) {
-////                printf("  ");
-////            }
-//printf(" %02X ", Send_data[isRead]);
-//        }
+//        printf("now read:\r\n");
+//        E2Read(Send_data, 0, 8);
+//        Print_array(Send_data, 8);
+//        E2Read(Send_data, 8, 8);
+//        Print_array(Send_data, 8);
+//        E2Read(Send_data, 16, 8);
+//        Print_array(Send_data, 8);
+//        E2Read(Send_data, 24, 8);
+//        Print_array(Send_data, 8);
+//        E2Read(Send_data, 32, 8);
+//        Print_array(Send_data, 8);
+        for (; isRead >= 4; isRead++) {
+            printf("isRead : %d\r\n", i);
+            if (i % 8 == 0) {
+                printf("\r\n");
+            }
+            if (i % 4 == 0) {
+                printf("  ");
+            }
+            printf(" %02X ", Send_data[isRead]);
+        }
 
         
 //    } else {
