@@ -65,13 +65,13 @@ void Printf_Cfg(CanCfgStruct *CanCfg) {
 
     printf("RXMnID0-1: %08lX %08lX\r\n", CanCfg->RXM0ID, CanCfg->RXM1ID);
 
-    printf("    No    flag    ID\r\n");
-    printf("RXF %d     %d     %08lX\r\n", 0, CanCfg->RXF0IDE, CanCfg->RXF0ID);
-    printf("RXF %d     %d     %08lX\r\n", 1, CanCfg->RXF1IDE, CanCfg->RXF1ID);
-    printf("RXF %d     %d     %08lX\r\n", 2, CanCfg->RXF2IDE, CanCfg->RXF2ID);
-    printf("RXF %d     %d     %08lX\r\n", 3, CanCfg->RXF3IDE, CanCfg->RXF3ID);
-    printf("RXF %d     %d     %08lX\r\n", 4, CanCfg->RXF4IDE, CanCfg->RXF4ID);
-    printf("RXF %d     %d     %08lX\r\n", 5, CanCfg->RXF5IDE, CanCfg->RXF5ID);
+    printf("RXF No flag ID\r\n");
+    printf("  %d    %d  %08lX\r\n", 0, CanCfg->RXF0IDE, CanCfg->RXF0ID);
+    printf("  %d    %d  %08lX\r\n", 1, CanCfg->RXF1IDE, CanCfg->RXF1ID);
+    printf("  %d    %d  %08lX\r\n", 2, CanCfg->RXF2IDE, CanCfg->RXF2ID);
+    printf("  %d    %d  %08lX\r\n", 3, CanCfg->RXF3IDE, CanCfg->RXF3ID);
+    printf("  %d    %d  %08lX\r\n", 4, CanCfg->RXF4IDE, CanCfg->RXF4ID);
+    printf("  %d    %d  %08lX\r\n", 5, CanCfg->RXF5IDE, CanCfg->RXF5ID);
 }
 
 /*******************************************************************************

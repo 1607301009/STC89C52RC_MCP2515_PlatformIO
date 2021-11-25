@@ -1,0 +1,22 @@
+E2_buf: 01
+   14  05  03  00    01  05  03  00
+   1F  FF  FF  FF    1F  FF  FF  FF
+   10  00  01  00    00  00  01  01
+   00  00  07  FF    10  00  17  FF
+   9F  FF  FF  FF    9F  FF  FF  FE
+ E2 end
+Kbps: 100
+bitrate:  01 07 38 02 00
+CAN_MODE: 05
+CANINTE: 03
+CANINTF: 00
+BUKT_enable: 01
+RXBnRXM0-1: 01 03
+RXMnID0-1: 1FFFFFFF 1FFFFFFF
+    No    flag    ID
+RXF 0     0     10000100
+RXF 1     0     00000101
+RXF 2     0     00000101
+RXF 3     0     00000102
+RXF 4     1     1FFFFFFF
+RXF 5     1     1FFFFFFE
