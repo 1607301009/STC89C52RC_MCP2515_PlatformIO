@@ -50,29 +50,29 @@ void Print_array(uint8 *array, uint8 len) {
 /*******************************************************************************
 * 函数名  : 打印can cfg
 *******************************************************************************/
-void Printf_Cfg(CanCfgStruct *CanCfg) {
-    printf("Kbps: %02d \r\n", CanCfg->_5Kbps * 5);
-    printf("bitrate: ");
-    Print_array(CanCfg->bitrate, 5);
-
-    printf("CAN_MODE: %02X \r\n", CanCfg->CAN_MODE);
-
-    printf("CANINTE: %02X \r\n", CanCfg->CANINTE_enable);
-    printf("CANINTF: %02X \r\n", CanCfg->CANINTF_enable);
-    printf("BUKT_enable: %02X \r\n", CanCfg->BUKT_enable);
-
-    printf("RXBnRXM0-1: %02X %02X\r\n", CanCfg->RXB0RXM, CanCfg->RXB1RXM);
-
-    printf("RXMnID0-1: %08lX %08lX\r\n", CanCfg->RXM0ID, CanCfg->RXM1ID);
-
-    printf("RXF No flag ID\r\n");
-    printf("  %d    %d  %08lX\r\n", 0, CanCfg->RXF0IDE, CanCfg->RXF0ID);
-    printf("  %d    %d  %08lX\r\n", 1, CanCfg->RXF1IDE, CanCfg->RXF1ID);
-    printf("  %d    %d  %08lX\r\n", 2, CanCfg->RXF2IDE, CanCfg->RXF2ID);
-    printf("  %d    %d  %08lX\r\n", 3, CanCfg->RXF3IDE, CanCfg->RXF3ID);
-    printf("  %d    %d  %08lX\r\n", 4, CanCfg->RXF4IDE, CanCfg->RXF4ID);
-    printf("  %d    %d  %08lX\r\n", 5, CanCfg->RXF5IDE, CanCfg->RXF5ID);
-}
+//void Printf_Cfg(CanCfgStruct *CanCfg) {
+//    printf("Kbps: %02d \r\n", CanCfg->_5Kbps * 5);
+//    printf("bitrate: ");
+//    Print_array(CanCfg->bitrate, 5);
+//
+//    printf("CAN_MODE: %02X \r\n", CanCfg->CAN_MODE);
+//
+//    printf("CANINTE: %02X \r\n", CanCfg->CANINTE_enable);
+//    printf("CANINTF: %02X \r\n", CanCfg->CANINTF_enable);
+//    printf("BUKT_enable: %02X \r\n", CanCfg->BUKT_enable);
+//
+//    printf("RXBnRXM0-1: %02X %02X\r\n", CanCfg->RXB0RXM, CanCfg->RXB1RXM);
+//
+//    printf("RXMnID0-1: %08lX %08lX\r\n", CanCfg->RXM0ID, CanCfg->RXM1ID);
+//
+//    printf("RXF No flag ID\r\n");
+//    printf("  %d    %d  %08lX\r\n", 0, CanCfg->RXF0IDE, CanCfg->RXF0ID);
+//    printf("  %d    %d  %08lX\r\n", 1, CanCfg->RXF1IDE, CanCfg->RXF1ID);
+//    printf("  %d    %d  %08lX\r\n", 2, CanCfg->RXF2IDE, CanCfg->RXF2ID);
+//    printf("  %d    %d  %08lX\r\n", 3, CanCfg->RXF3IDE, CanCfg->RXF3ID);
+//    printf("  %d    %d  %08lX\r\n", 4, CanCfg->RXF4IDE, CanCfg->RXF4ID);
+//    printf("  %d    %d  %08lX\r\n", 5, CanCfg->RXF5IDE, CanCfg->RXF5ID);
+//}
 
 /*******************************************************************************
 * 描述    : 将数组中的数据，拼接完整ID，长度取4
@@ -90,19 +90,82 @@ void Printf_Cfg(CanCfgStruct *CanCfg) {
 //    }
 //}
 
+//
+//void test_Set_Buf_For_ID()
+//{
+//    uint8 buf_addr = RXF0SIDH;
+//    uint32 ID = 0x1234567;
+//    uint8 EXIDE = 1;
+//    Set_Buf_For_ID(buf_addr, ID, EXIDE);
+//}
+//void test_Get_ID_For_Buf()
+//{
+//    uint8 Tmp = MCP2515_ReadByte(RXF0SIDH + 1);
+//    uint32 ID = Get_ID_For_Buf(RXF0SIDH);
+//    printf("now read buf:\r\n");
+//    printf("IED  ID: %d %08lX\r\n", Tmp >> 3 & 0x1, ID);
+//    printf("SIDH: %02X\r\n", MCP2515_ReadByte(RXF0SIDH));
+//    printf("SIDL: %02X\r\n", MCP2515_ReadByte(RXF0SIDH + 1));
+//    printf("EID8: %02X\r\n", MCP2515_ReadByte(RXF0SIDH + 2));
+//    printf("EID0: %02X\r\n", MCP2515_ReadByte(RXF0SIDH + 3));
+//    printf("DLC: %02X\r\n", MCP2515_ReadByte(RXF0SIDH + 4));
+//}
+
+
+/*******************************************************************************
+* 描述    : 将msg打印出来
+* 输入    : Msg结构体
+*******************************************************************************/
+//void Printf_Msg(MsgStruct *Msg) {
+//    uint8 i;
+//    uint32 ID = Msg->ID;
+//    uint8 EXIDE = Msg->EXIDE;
+//    uint8 DLC = Msg->DLC;
+//
+////    printf("ID   EXIDE  IsSend  FILHIT  RTR  DLC      Data");
+//
+////    if (Msg->IsSend) {
+////        printf("send ");
+////    } else {
+////        printf("rec  ");
+////    }
+//
+//    if (EXIDE) {
+//        printf("%08lX %d ", ID);
+//    } else {
+//        printf("%8lX %d ", ID);
+//    }
+////    printf(" %d %d %d %d %d：", EXIDE, Msg->IsSend, Msg->FILHIT, Msg->RTR, Msg->DLC);
+//    Print_array(Msg->DATA, Msg->DLC)
+////    printf("EXIDE: %d,  DLC:%d, FILHIT:%d    Data: ", ID, DLC);
+////    for (i = 0; i < DLC; i++) {
+////        printf("%02bX ", Msg->DATA[i]);
+////    }
+////
+////    printf("\r\n");
+//}
+
+
 void unittest(){
     // pass
 //    test_Get_ID_For_Array();
 //    test_Set_Array_For_ID();
 
 CanCfgStruct CanCfg;
+MsgStruct RecMsg;
+
 Set_Cfg_From_E2(&CanCfg);
-//printf("_5Kbps: %02X \r\n", CanCfg._5Kbps);
-//printf("_5Kbps: %02X \r\n", CanCfg._5Kbps);
-Printf_Cfg(&CanCfg);
-    // not test
-    // test_Get_ID_For_Buf()
-    // test_Set_Buf_For_ID()
+//Printf_Cfg(&CanCfg);
+
+Can_Init(&CanCfg);
+Send_Cfg();
+
+//CAN_Receive_Msg(RXB0CTRL, &RecMsg);
+////Printf_Msg(RecMsg);
+//    // not test
+//
+////    test_Set_Buf_For_ID();
+////    test_Get_ID_For_Buf();
 }
 
 
@@ -111,7 +174,7 @@ void E2_buf(uint8 isRead)
 {
     uint8 __xdata Send_data[] = {
             // 波特率, 工作模式, CANINTE, CANINTF, BUKT, RXB0RXM, RXB1RXM
-            0x14, 0x05, 0x03, 0x00, 0x01, 0x05, 0x03, 0x00,
+            0x14, 0x03, 0x03, 0x00, 0x01, 0x05, 0x03, 0x00,
             // RXF0ID, 1 2 3   4 5    ExIDE   id
             0x1F, 0xFF, 0xFF, 0xFF, 0x1F, 0xFF, 0xFF, 0xFF,
             0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01,
@@ -164,10 +227,10 @@ void main()
 //    printf("uint8: i = 0 x: %02X\r\n", i);
 //    printf("uint32: ID = 0 x: %08X\r\n", ID);
 //
-    E2_buf(1);
-//    printf("write \r\n");
-//    E2_buf(0);
 
+//    printf("write \r\n");
+    E2_buf(0);
+    E2_buf(1);
     unittest();
 
 

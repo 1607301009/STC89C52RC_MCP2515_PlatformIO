@@ -74,9 +74,5 @@ void test_Get_ID_For_Buf()
 
 }
 
-void test_Set_Buf_For_ID()
-{
-
-}
 
 

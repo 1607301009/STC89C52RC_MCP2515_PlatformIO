@@ -229,8 +229,15 @@ void Set_Bitrate_Array(uint8 _5Kbps, uint8 *bitrate) {
 
 void Can_Init(CanCfgStruct *CanCfg)
 {
-    MCP2515_Reset();    //发送复位指令软件复位MCP2515
+    MCP2515_Reset();    //发送复位指令软件复位MCP2515， 自动进入配置模式
     Delay_Nms(1);        //通过软件延时约nms(不准确)
+
+//    //设置MCP2515工作模式
+//    MCP2515_WriteByte(CANCTRL, REQOP_CONFIG | CLKOUT_ENABLED);
+//    if ((MCP2515_ReadByte(CANSTAT) >> 5) != REQOP_CONFIG)//判断MCP2515是否已经进入工作模式
+//    {
+//        MCP2515_WriteByte(CANCTRL, REQOP_CONFIG | CLKOUT_ENABLED);//再次设置MCP2515进入配置模式
+//    }
 
     // 设置波特率
     // set CNF1, SJW=00,长度为1TQ, BRP=49, TQ=[2*(BRP+1)]/Fsoc=2*50/8M=12.5us
@@ -258,11 +265,17 @@ void Can_Init(CanCfgStruct *CanCfg)
     Set_Buf_For_ID(RXM0SIDH, CanCfg->RXM0ID, 1);
     Set_Buf_For_ID(RXM1SIDH, CanCfg->RXM1ID, 1);
 
-    MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//将MCP2515设置为环回模式,退出配置模式
-    if (OPMODE_NORMAL != (MCP2515_ReadByte(CANSTAT) && 0xE0))//判断MCP2515是否已经进入环回模式
+    //设置MCP2515工作模式
+    MCP2515_WriteByte(CANCTRL, (CanCfg->CAN_MODE << 5) | CLKOUT_ENABLED);
+    if ((MCP2515_ReadByte(CANSTAT) >> 5) != CanCfg->CAN_MODE)//判断MCP2515是否已经进入工作模式
     {
-        MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
+        MCP2515_WriteByte(CANCTRL, CanCfg->CAN_MODE | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
     }
+//    MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//将MCP2515设置为环回模式,退出配置模式
+//    if (OPMODE_NORMAL != (MCP2515_ReadByte(CANSTAT) && 0xE0))//判断MCP2515是否已经进入环回模式
+//    {
+//        MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
+//    }
 }
 
 /*******************************************************************************
@@ -313,6 +326,31 @@ void CAN_Send_Msg(MsgStruct *SendMsg) {
 //    }
 }
 
+/* 读取接收缓冲器数据 */
+void CAN_Receive_Msg(uint8 RXB_CTRL_Address, MsgStruct *RecMsg) {
+    uint8 i;
+
+    uint8 RXBnCTRL = MCP2515_ReadByte(RXB_CTRL_Address);
+    uint8 RXBnDLC = MCP2515_ReadByte(RXB_CTRL_Address + 5);
+    RecMsg->DLC = RXBnDLC & 0x0F;
+    RecMsg->RTR = RXBnDLC >> 6;
+    RecMsg->IsSend = 0;
+
+    if (RXB_CTRL_Address == RXB0CTRL) {
+        RecMsg->FILHIT = RXBnCTRL & 0x3;
+    } else {
+        RecMsg->FILHIT = RXBnCTRL & 0x7;
+    }
+
+    RecMsg->ID = Get_ID_For_Buf(RXB_CTRL_Address + 1);
+    RecMsg->EXIDE = (MCP2515_ReadByte(RXB_CTRL_Address + 2) & 0x8) >> 3;
+
+    for (i = 0; i < RecMsg->DLC; i++) //获取接收到的数据
+    {
+        RecMsg->DATA[i] = MCP2515_ReadByte(RXB_CTRL_Address + 6 + i);
+    }
+}
+
 
 /*******************************************************************************
 * 描述    : 通过读取存储数据，设置Can配置
@@ -358,4 +396,16 @@ void Set_Cfg_From_E2(CanCfgStruct *CanCfg) {
     CanCfg->RXF4ID = Get_ID_For_Array(E2_read_data, 0);
     CanCfg->RXF5IDE = E2_read_data[4] & 0x8 >> 3;
     CanCfg->RXF5ID = Get_ID_For_Array(E2_read_data, 4);
+}
+
+void Send_Cfg(void) {
+    MsgStruct SendMsg;
+    uint8 Tmp;
+
+    SendMsg.ID = Get_ID_For_Buf(RXF0SIDH);
+
+    SendMsg.RTR = 0x1;
+    SendMsg.EXIDE = MCP2515_ReadByte(RXF0SIDH + 1) >> 3 & 0x1;
+    SendMsg.DLC = 0;
+    CAN_Send_Msg(&SendMsg);
 }
