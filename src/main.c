@@ -118,13 +118,9 @@ void E2_buf(uint8 isRead)
             0x00, 0x00, 0x07, 0xff, 0x10, 0x00, 0x17, 0xFF,
             // RXM0ID 0 1
             0x9F, 0xFF, 0xFF, 0xFF, 0x9F, 0xFF, 0xFF, 0xFE};
-    uint8 i;
-//__xdata uint8 i;
-//__xdata unsigned char i;
-//__bdata bit k;
-//    k =1;
+
     printf("E2_buf: %02X ", isRead);
-//    if (isRead == 1) {
+    if (isRead == 1) {
 //        printf("now read:\r\n");
 //        E2Read(Send_data, 0, 8);
 //        Print_array(Send_data, 8);
@@ -136,21 +132,19 @@ void E2_buf(uint8 isRead)
 //        Print_array(Send_data, 8);
 //        E2Read(Send_data, 32, 8);
 //        Print_array(Send_data, 8);
-        for (; isRead >= 4; isRead++) {
-            printf("isRead : %d\r\n", i);
-            if (i % 8 == 0) {
+        for (isRead = 0; isRead < 40; isRead++) {
+            if (isRead % 8 == 0) {
                 printf("\r\n");
             }
-            if (i % 4 == 0) {
+            if (isRead % 4 == 0) {
                 printf("  ");
             }
             printf(" %02X ", Send_data[isRead]);
         }
 
-        
-//    } else {
-//        E2Write(Send_data, 0, 8);
-//    }
+    } else {
+        E2Write(Send_data, 0, 8);
+    }
 
     printf("\r\n E2 end\r\n");
 }
