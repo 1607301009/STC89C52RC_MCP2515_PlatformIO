@@ -15,7 +15,7 @@ void Set_Buf_For_ID(uint8 buf_addr, uint32 ID, uint8 EXIDE);
 void Set_Bitrate_Array(uint8 _5Kbps, uint8 *bitrate);
 void Can_Init(CanCfgStruct *CanCfg);
 void CAN_Send_Msg(MsgStruct *SendMsg);
-void CAN_Receive_Msg(MsgStruct *SendMsg);
+//void CAN_Receive_Msg(uint8 RXB_CTRL_Address, MsgStruct *RecMsg);
 void Set_Cfg_From_E2(CanCfgStruct *CanCfg);
 void Send_Cfg(void) ;
 

@@ -511,7 +511,7 @@ typedef struct      // reveive 结构体
     uint8  DLC:4;   // 数据长度码位 <3:0> 表明接收到的数据字节个数
 
     uint8  DATA[8]; // 接收缓冲器 n 数据字段字节 m, 这 8 个字节包含接收报文的数据信息
-} MsgStruct;
+} __xdata MsgStruct;
 
 // BFPCTRL——RXnBF 引脚控制寄存器和状态寄存器 （地址：0Ch） p29 未设置配置文件
 // EFLG——错误标志寄存器 （地址：2Dh） p47 未设置配置文件

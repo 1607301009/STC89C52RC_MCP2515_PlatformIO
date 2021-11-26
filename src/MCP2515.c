@@ -266,16 +266,16 @@ void Can_Init(CanCfgStruct *CanCfg)
     Set_Buf_For_ID(RXM1SIDH, CanCfg->RXM1ID, 1);
 
     //设置MCP2515工作模式
-    MCP2515_WriteByte(CANCTRL, (CanCfg->CAN_MODE << 5) | CLKOUT_ENABLED);
-    if ((MCP2515_ReadByte(CANSTAT) >> 5) != CanCfg->CAN_MODE)//判断MCP2515是否已经进入工作模式
-    {
-        MCP2515_WriteByte(CANCTRL, CanCfg->CAN_MODE | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
-    }
-//    MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//将MCP2515设置为环回模式,退出配置模式
-//    if (OPMODE_NORMAL != (MCP2515_ReadByte(CANSTAT) && 0xE0))//判断MCP2515是否已经进入环回模式
+//    MCP2515_WriteByte(CANCTRL, (CanCfg->CAN_MODE << 5) | CLKOUT_ENABLED);
+//    if ((MCP2515_ReadByte(CANSTAT) >> 5) != CanCfg->CAN_MODE)//判断MCP2515是否已经进入工作模式
 //    {
-//        MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
+//        MCP2515_WriteByte(CANCTRL, CanCfg->CAN_MODE | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
 //    }
+    MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//将MCP2515设置为环回模式,退出配置模式
+    if (OPMODE_NORMAL != (MCP2515_ReadByte(CANSTAT) && 0xE0))//判断MCP2515是否已经进入环回模式
+    {
+        MCP2515_WriteByte(CANCTRL, REQOP_LOOPBACK | CLKOUT_ENABLED);//再次将MCP2515设置为环回模式,退出配置模式
+    }
 }
 
 /*******************************************************************************
@@ -326,30 +326,6 @@ void CAN_Send_Msg(MsgStruct *SendMsg) {
 //    }
 }
 
-/* 读取接收缓冲器数据 */
-void CAN_Receive_Msg(uint8 RXB_CTRL_Address, MsgStruct *RecMsg) {
-    uint8 i;
-
-    uint8 RXBnCTRL = MCP2515_ReadByte(RXB_CTRL_Address);
-    uint8 RXBnDLC = MCP2515_ReadByte(RXB_CTRL_Address + 5);
-    RecMsg->DLC = RXBnDLC & 0x0F;
-    RecMsg->RTR = RXBnDLC >> 6;
-    RecMsg->IsSend = 0;
-
-    if (RXB_CTRL_Address == RXB0CTRL) {
-        RecMsg->FILHIT = RXBnCTRL & 0x3;
-    } else {
-        RecMsg->FILHIT = RXBnCTRL & 0x7;
-    }
-
-    RecMsg->ID = Get_ID_For_Buf(RXB_CTRL_Address + 1);
-    RecMsg->EXIDE = (MCP2515_ReadByte(RXB_CTRL_Address + 2) & 0x8) >> 3;
-
-    for (i = 0; i < RecMsg->DLC; i++) //获取接收到的数据
-    {
-        RecMsg->DATA[i] = MCP2515_ReadByte(RXB_CTRL_Address + 6 + i);
-    }
-}
 
 
 /*******************************************************************************
@@ -402,10 +378,10 @@ void Send_Cfg(void) {
     MsgStruct SendMsg;
     uint8 Tmp;
 
-    SendMsg.ID = Get_ID_For_Buf(RXF0SIDH);
+    SendMsg.ID = Get_ID_For_Buf(RXB0CTRL);
 
     SendMsg.RTR = 0x1;
-    SendMsg.EXIDE = MCP2515_ReadByte(RXF0SIDH + 1) >> 3 & 0x1;
+    SendMsg.EXIDE = MCP2515_ReadByte(RXB0CTRL + 1) >> 3 & 0x1;
     SendMsg.DLC = 0;
     CAN_Send_Msg(&SendMsg);
 }
