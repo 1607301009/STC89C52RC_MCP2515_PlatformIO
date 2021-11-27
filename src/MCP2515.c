@@ -374,14 +374,15 @@ void Set_Cfg_From_E2(CanCfgStruct *CanCfg) {
     CanCfg->RXF5ID = Get_ID_For_Array(E2_read_data, 4);
 }
 
-void Send_Cfg(void) {
-    MsgStruct SendMsg;
-    uint8 Tmp;
-
-    SendMsg.ID = Get_ID_For_Buf(RXB0CTRL);
-
-    SendMsg.RTR = 0x1;
-    SendMsg.EXIDE = MCP2515_ReadByte(RXB0CTRL + 1) >> 3 & 0x1;
-    SendMsg.DLC = 0;
-    CAN_Send_Msg(&SendMsg);
-}
+//void Send_Cfg(void) {
+//    MsgStruct SendMsg;
+//    uint8 Tmp;
+//
+////    SendMsg.ID = Get_ID_For_Buf(RXB0CTRL);
+//    SendMsg.ID = 0x1FFFFFFF;
+//
+//    SendMsg.RTR = 0x1;
+//    SendMsg.EXIDE = MCP2515_ReadByte(RXB0CTRL + 1) >> 3 & 0x1;
+//    SendMsg.DLC = 0;
+//    CAN_Send_Msg(&SendMsg);
+//}

@@ -174,58 +174,86 @@ void CAN_Receive_Msg(uint8 RXB_CTRL_Address, MsgStruct *RecMsg) {
     printf("Rec Msg+++\r\n");
 }
 
-void test_send(){
+//void test_send(){
+//    MsgStruct SendMsg;
+//    uint8 i;
+//
+//
+//    SendMsg.IsSend = 0x1;
+//
+//    SendMsg.ID = ID;
+//    SendMsg.TYPE = 0x2;
+//    SendMsg.EXIDE = 0x0;
+//    SendMsg.DLC = 8;
+//
+//    for (i = 0; i < 8; i++) //发送字符串，直到遇到0才结束
+//        {
+//        SendMsg.DATA[i] = Send_data[i];
+//        //        printf("SendMsg.DATA[%bd] = %bx \r\n", i, SendMsg.DATA[i]);
+//        }
+//
+//    RecMsg.IsSend = 0;
+//    //    Send(&SendMsg);
+//
+//    for (i = 0; i < 2; i++) //发送字符串，直到遇到0才结束
+//        {
+//        Send(&SendMsg);
+//        ShowMsg(&SendMsg);
+//        SendMsg.ID = 0x100;
+//        SendMsg.TYPE = 0x2;
+//        SendMsg.EXIDE = 0x1;
+//        SendMsg.DLC = 7;
+//
+//        Delay_Nms(3000);
+//
+//        printf("CAN_RX0IF_Flag = %bd \r\n", CAN_RX0IF_Flag);
+//        printf("CAN_RX1IF_Flag = %bd \r\n", CAN_RX1IF_Flag);
+//        printf("CANSTAT: %02bX \r\n", MCP2515_ReadByte(CANSTAT));
+//
+//
+//        CANINTF_Flag = MCP2515_ReadByte(CANINTF);
+//        printf("CANINTF: %02bX \r\n", CANINTF_Flag);
+//
+//        if (CANINTF_Flag & RX0IF) {
+//            Receive(RXB0CTRL, &RecMsg);
+//            ShowMsg(&RecMsg);
+//            MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFE);//清除中断标志位(中断标志寄存器必须由MCU清零)
+//        }
+//
+//        if (CANINTF_Flag & RX1IF) {
+//            Receive(RXB1CTRL, &RecMsg);
+//            ShowMsg(&RecMsg);
+//            MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFD);//清除中断标志位(中断标志寄存器必须由MCU清零)
+//        }
+//        }
+//}
+
+void test_send(uint32 ID, uint8 EXIDE){
+    uint8 Send_data[] = {0x20};
     MsgStruct SendMsg;
-    uint8 i;
-
-
-    SendMsg.IsSend = 0x1;
-
     SendMsg.ID = ID;
-    SendMsg.TYPE = 0x2;
-    SendMsg.EXIDE = 0x0;
-    SendMsg.DLC = 8;
+    //
+    SendMsg.RTR = 0x0;
+    SendMsg.EXIDE = EXIDE;
+    SendMsg.DLC = 1;
+    SendMsg.DATA[0] = Send_data[0x12];
+    CAN_Send_Msg(&SendMsg);
+}
 
-    for (i = 0; i < 8; i++) //发送字符串，直到遇到0才结束
-        {
-        SendMsg.DATA[i] = Send_data[i];
-        //        printf("SendMsg.DATA[%bd] = %bx \r\n", i, SendMsg.DATA[i]);
-        }
+void auto_rec(){
+    MsgStruct RecMsg;
+    printf("flag %02x %d, %d\r\n", MCP2515_ReadByte(CANINTF), CAN_RX1IF_Flag, CAN_RX0IF_Flag);
+    if (CAN_RX0IF_Flag) {
+        CAN_Receive_Msg(RXB0CTRL, &RecMsg);
+        Printf_Msg(&RecMsg);
+        MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFE);//清除中断标志位(中断标志寄存器必须由MCU清零)
+    }
 
-    RecMsg.IsSend = 0;
-    //    Send(&SendMsg);
-
-    for (i = 0; i < 2; i++) //发送字符串，直到遇到0才结束
-        {
-        Send(&SendMsg);
-        ShowMsg(&SendMsg);
-        SendMsg.ID = 0x100;
-        SendMsg.TYPE = 0x2;
-        SendMsg.EXIDE = 0x1;
-        SendMsg.DLC = 7;
-
-        Delay_Nms(3000);
-
-        printf("CAN_RX0IF_Flag = %bd \r\n", CAN_RX0IF_Flag);
-        printf("CAN_RX1IF_Flag = %bd \r\n", CAN_RX1IF_Flag);
-        printf("CANSTAT: %02bX \r\n", MCP2515_ReadByte(CANSTAT));
-
-
-        CANINTF_Flag = MCP2515_ReadByte(CANINTF);
-        printf("CANINTF: %02bX \r\n", CANINTF_Flag);
-
-        if (CANINTF_Flag & RX0IF) {
-            Receive(RXB0CTRL, &RecMsg);
-            ShowMsg(&RecMsg);
-            MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFE);//清除中断标志位(中断标志寄存器必须由MCU清零)
-        }
-
-        if (CANINTF_Flag & RX1IF) {
-            Receive(RXB1CTRL, &RecMsg);
-            ShowMsg(&RecMsg);
-            MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFD);//清除中断标志位(中断标志寄存器必须由MCU清零)
-        }
-        }
+    if (CAN_RX1IF_Flag) {
+        CAN_Receive_Msg(RXB1CTRL, &RecMsg);
+        Printf_Msg(&RecMsg);
+        MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFD);//清除中断标志位(中断标志寄存器必须由MCU清零)
+    }
 }
 
 void unittest(){
@@ -234,28 +262,23 @@ void unittest(){
 //    test_Set_Array_For_ID();
 
 CanCfgStruct CanCfg;
-MsgStruct RecMsg;
 
 Set_Cfg_From_E2(&CanCfg);
 //Printf_Cfg(&CanCfg);
 
 Can_Init(&CanCfg);
 
-//printf("flag %02x \r\n", MCP2515_ReadByte(CANINTF));
+printf("flag %02x \r\n", MCP2515_ReadByte(CANINTF));
 //Send_Cfg();
-//
-//printf("flag %02x %d, %d\r\n", MCP2515_ReadByte(CANINTF), CAN_RX1IF_Flag, CAN_RX0IF_Flag);
-//if (CAN_RX0IF_Flag) {
-//    CAN_Receive_Msg(RXB0CTRL, &RecMsg);
-//    Printf_Msg(&RecMsg);
-//    MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFE);//清除中断标志位(中断标志寄存器必须由MCU清零)
-//}
-//
-//if (CAN_RX1IF_Flag) {
-//    CAN_Receive_Msg(RXB1CTRL, &RecMsg);
-//    Printf_Msg(&RecMsg);
-//    MCP2515_WriteByte(CANINTF, MCP2515_ReadByte(CANINTF) & 0xFD);//清除中断标志位(中断标志寄存器必须由MCU清零)
-//}
+test_send(0x101, 0);
+auto_rec();
+test_send(0x10000100, 1);
+auto_rec();
+test_send(0x7FF, 0);
+auto_rec();
+test_send(0x17FF, 1);
+auto_rec();
+
 
 //CAN_Receive_Msg(RXB0CTRL, &RecMsg);
 //Printf_Msg(&RecMsg);
