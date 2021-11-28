@@ -232,17 +232,19 @@ void test_send(uint32 ID, uint8 EXIDE){
     uint8 Send_data[] = {0x20};
     MsgStruct SendMsg;
     SendMsg.ID = ID;
+    SendMsg.IsSend = 1;
     //
     SendMsg.RTR = 0x0;
     SendMsg.EXIDE = EXIDE;
     SendMsg.DLC = 1;
     SendMsg.DATA[0] = Send_data[0x12];
     CAN_Send_Msg(&SendMsg);
+    Printf_Msg(&SendMsg);
 }
 
 void auto_rec(){
     MsgStruct RecMsg;
-    printf("flag %02x %d, %d\r\n", MCP2515_ReadByte(CANINTF), CAN_RX1IF_Flag, CAN_RX0IF_Flag);
+    printf("flag %02x\r\n", MCP2515_ReadByte(CANINTF));
     if (CAN_RX0IF_Flag) {
         CAN_Receive_Msg(RXB0CTRL, &RecMsg);
         Printf_Msg(&RecMsg);

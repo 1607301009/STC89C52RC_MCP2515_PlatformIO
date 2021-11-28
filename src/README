@@ -22,3 +22,20 @@ RXF No flag ID
   3    0  00000102
   4    1  1FFFFFFF
   5    1  1FFFFFFE
+
+
+ Kbps: 100
+ bitrate:  01 07 38 02 00
+ CAN_MODE: 03
+ CANINTE: 03
+ CANINTF: 00
+ BUKT_enable: 01
+ RXBnRXM0-1: 03 03
+ RXMnID0-1: 1FFFFFFF 1FFFFFFF
+ RXF No flag ID
+   0    1  00000100
+   1    0  000007FE
+   2    0  00000101
+   3    1  00000102
+   4    0  00000103
+   5    1  00000104
